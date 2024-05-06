@@ -1,0 +1,35 @@
+name: elasticsearch-nestjs
+
+networks:
+    elasticsearch_nestjs_network:
+        name: elasticsearch_nestjs_network
+        driver: bridge
+
+services:
+    mongo:
+        build:
+            dockerfile: .docker/mongo/Dockerfile
+        container_name: elasticsearch-nestjs-mongo
+        restart: always
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: $MONGO_USERNAME
+            MONGO_INITDB_ROOT_PASSWORD: $MONGO_PASSWORD
+        ports:
+            - '${MONGO_PORT}:27017'
+        command: --replSet rs0 --keyFile /etc/mongo-keyfile --bind_ip_all --port $MONGO_PORT
+        healthcheck:
+            test: echo "
+                try { rs.status() }
+                catch (err) { rs.initiate({ _id:'rs0', members:[{ _id:0, host:'127.0.0.1:27017' }] }) }
+                " | mongosh --port $MONGO_PORT -u $MONGO_USERNAME -p $MONGO_PASSWORD --authenticationDatabase admin
+            interval: 5s
+            timeout: 15s
+            start_period: 15s
+            retries: 10
+        networks:
+            - elasticsearch_nestjs_network
+        volumes:
+            - mongo_data:/data/db
+
+volumes:
+    mongo_data:
