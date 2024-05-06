@@ -2,6 +2,7 @@ name: elasticsearch-nestjs
 
 networks:
     elasticsearch_nestjs_network:
+        name: elasticsearch_nestjs_network
         driver: bridge
 
 services:

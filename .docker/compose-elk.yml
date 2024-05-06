@@ -1,3 +1,5 @@
+name: elasticsearch-nestjs
+
 services:
     # The 'setup' service runs a one-off script which initializes users inside
     # Elasticsearch — such as 'logstash_internal' and 'kibana_system' — with the
@@ -35,11 +37,12 @@ services:
             MONITORING_INTERNAL_PASSWORD: ${MONITORING_INTERNAL_PASSWORD:-}
             BEATS_SYSTEM_PASSWORD: ${BEATS_SYSTEM_PASSWORD:-}
         networks:
-            - elk
+            - elasticsearch_nestjs_network
         depends_on:
             - elasticsearch
 
     elasticsearch:
+        container_name: elasticsearch-nestjs-elasticsearch
         build:
             context: elasticsearch/
             args:
@@ -61,10 +64,11 @@ services:
             # see: https://www.elastic.co/guide/en/elasticsearch/reference/current/bootstrap-checks.html
             discovery.type: single-node
         networks:
-            - elk
+            - elasticsearch_nestjs_network
         restart: unless-stopped
 
     logstash:
+        container_name: elasticsearch-nestjs-logstash
         build:
             context: logstash/
             args:
@@ -81,12 +85,13 @@ services:
             LS_JAVA_OPTS: -Xms256m -Xmx256m
             LOGSTASH_INTERNAL_PASSWORD: ${LOGSTASH_INTERNAL_PASSWORD:-}
         networks:
-            - elk
+            - elasticsearch_nestjs_network
         depends_on:
             - elasticsearch
         restart: unless-stopped
 
     kibana:
+        container_name: elasticsearch-nestjs-kibana
         build:
             context: kibana/
             args:
@@ -98,14 +103,27 @@ services:
         environment:
             KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD:-}
         networks:
-            - elk
+            - elasticsearch_nestjs_network
         depends_on:
             - elasticsearch
         restart: unless-stopped
 
+    elastic-connectors:
+        image: docker.elastic.co/enterprise-search/elastic-connectors:${CONNECTORS_VERSION}
+        depends_on:
+            elasticsearch:
+                condition: service_started
+            kibana:
+                condition: service_started
+        volumes:
+            - ./connectors-config:/config
+        command: /app/bin/elastic-ingest -c /config/config.yml
+        networks:
+            - elasticsearch_nestjs_network
+
 networks:
-    elk:
-        driver: bridge
+    elasticsearch_nestjs_network:
+        external: true
 
 volumes:
     elasticsearch:
