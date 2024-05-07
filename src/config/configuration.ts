@@ -10,6 +10,7 @@ export class Configuration {
             Configuration._config = {
                 env: envMode,
                 port: parseInt(process.env['API_PORT'], 10),
+                enableApiSwagger: process.env['ENABLE_API_SWAGGER'] === 'true',
                 mongo: {
                     host: process.env['MONGO_HOST'],
                     port: parseInt(process.env['MONGO_PORT'], 10),
