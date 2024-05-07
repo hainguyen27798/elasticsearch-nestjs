@@ -2,6 +2,7 @@ import { Logger, ValidationPipe, VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 
 import { Configuration } from '@/config/configuration';
+import { LoggerServerHelper } from '@/helpers';
 
 import { AppModule } from './app.module';
 
@@ -18,6 +19,13 @@ async function bootstrap() {
         type: VersioningType.URI,
         defaultVersion: '1',
     });
+
+    // init logger
+    LoggerServerHelper.init();
+    app.useLogger(LoggerServerHelper.config);
+
+    // apply http logger
+    app.use(LoggerServerHelper.morganMiddleware);
 
     // validate input before jump into controller
     app.useGlobalPipes(new ValidationPipe());
