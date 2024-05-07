@@ -3,6 +3,7 @@ import { NestFactory } from '@nestjs/core';
 
 import { Configuration } from '@/config/configuration';
 import { LoggerServerHelper } from '@/helpers';
+import { setupSwagger } from '@/setup-swagger';
 
 import { AppModule } from './app.module';
 
@@ -29,6 +30,12 @@ async function bootstrap() {
 
     // validate input before jump into controller
     app.useGlobalPipes(new ValidationPipe());
+
+    if (Configuration.instance.enableApiSwagger) {
+        setupSwagger(app);
+    }
+
+    app.enableShutdownHooks();
 
     await app.listen(Configuration.instance.port);
 }
