@@ -1,3 +1,5 @@
+import { ClientOptions } from '@elastic/elasticsearch';
+
 import { ENV_MODE } from '@/constants';
 
 export type TConfig = {
@@ -16,4 +18,5 @@ export type TConfig = {
         email: string;
         pass: string;
     };
+    elasticsearch: ClientOptions;
 };
