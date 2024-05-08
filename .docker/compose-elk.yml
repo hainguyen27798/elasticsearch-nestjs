@@ -71,19 +71,6 @@ services:
             - elasticsearch
         restart: unless-stopped
 
-    elastic-connectors:
-        image: docker.elastic.co/enterprise-search/elastic-connectors:${CONNECTORS_VERSION}
-        depends_on:
-            elasticsearch:
-                condition: service_started
-            kibana:
-                condition: service_started
-        volumes:
-            - ./connectors-config:/config
-        command: /app/bin/elastic-ingest -c /config/config.yml
-        networks:
-            - elasticsearch_nestjs_network
-
 networks:
     elasticsearch_nestjs_network:
         external: true
